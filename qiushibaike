@@ -1,0 +1,37 @@
+#爬取糗事百科文字列表信息
+
+import urllib.request
+import re
+import time
+
+
+def judgment_sex(class_name):
+    if class_name == 'womenIcon':
+        return '女'
+    else:
+        return '男'
+def get_info(url):
+    info_lists=[]
+#提示服务器浏览器
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36'}
+    req = urllib.request.Request(url,headers= headers)
+    res = urllib.request.urlopen(req)
+#将res.read()使用utf-8格式转化为字符串
+    res=res.read().decode('utf-8')
+    ids = re.findall('<h2>(.*?)</h2>',res,re.S)
+    levels = re.findall('<div class="articleGender womenIcon">(.*?)</div>',res,re.S)
+    sexs = re.findall('<div class="articleGender (.*?)"',res,re.S)
+    contents = re.findall('<div class="content">.*?<span>(.*?)</span>',res,re.S)
+    laughs = re.findall('<span class="stats-vote"><i class="number">(\d+)</i>',res,re.S)
+    comments = re.findall('<i class="number">(\d+)</i>',res,re.S)
+
+    for id,level,sex,content,laugh,comment in zip(ids,levels,sexs,contents,laughs,comments):
+        info ={'id':id,'level':level,'sex': judgment_sex(sex),'content':content,'laugh':laugh,'comment':comment}
+        print(info)
+
+if __name__ == '__main__':
+    urls = ['https://www.qiushibaike.com/text/page/{}/'.format(str(i)) for i in range(1,13)]
+    for url in urls:
+        print(url)
+        result=get_info(url)
+   
